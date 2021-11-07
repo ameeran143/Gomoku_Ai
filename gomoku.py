@@ -60,51 +60,63 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
 
     # This function is tested to wo
 
+
 def detect_row(board, col, y_start, x_start, length, d_y, d_x):
     open_count = 0
     semi_count = 0
     cur_length = 0
-    sequence_status = None
-
-    # accounting for if the next square is outside of the box
-
-    for i in range(len(board) + 1):
-
-        if y_start + d_y > len(board) or y_start + d_y < 0 or x_start + d_x > len(board) or x_start + d_x < 0:
-            return open_count, semi_count
-
-        if board[y_start][x_start] == col:
-            # need a function to return the lenght of a sequence.
-
-            cur_length = get_length()
-            sequence_status = is_bounded()
-
-        else:
-            cur_length = 0
-
-def get_length(board,col, y_start, x_start, d_y, d_x):
-    length = 0
+    sequence_status = ""
 
     while True:
-        if max(y_start + d_y, x_start + d_x) >= len(board) or min(y_start + d_y, x_start + d_x) < 0 or board [y_start + d_y][x_start + d_x] != col:
-            break
+        if y_start + d_y > len(board) or x_start + d_x > len(board) or y_start + d_y < 0 or x_start + d_x < 0:
+            return open_count, semi_count
+
+        elif board[y_start][x_start] == col:
+            # need a function to return the length of a sequence.
+            cur_length = get_length(board, col, y_start, x_start, d_y, d_x)
+
+            if cur_length == length:
+                sequence_status = is_bounded(board, (y_start + d_y * (length - 1)), (x_start + d_x * (length - 1)),
+                                             length, d_y, d_x)
+                y_start += (length - 1) * d_y
+                x_start += (length - 1) * d_x
+
+                if sequence_status == "OPEN":
+                    open_count = open_count + 1
+                if sequence_status == "SEMIOPEN":
+                    semi_count = semi_count + 1
+
+            else:
+                y_start += (cur_length - 1) * d_y
+                x_start += (cur_length - 1) * d_x
+
+        y_start += d_y
+        x_start += d_x
+
+
+def get_length(board, col, y_start, x_start, d_y, d_x):
+    length = 1  # always starts on a block of correct colour therefore starts with a value of 1.
+
+    for i in range(len(board) + 1):
+        if max(y_start + d_y, x_start + d_x) >= len(board) or min(y_start + d_y, x_start + d_x) < 0 or \
+                board[y_start + d_y][x_start + d_x] != col:
+            return length
+
         y_start += d_y
         x_start += d_x
         length += 1
 
-    return length
-
-
 def detect_rows(board, col, length):
     open_seq_count, semi_open_seq_count = 0, 0
 
-    # find the length of the row, diagonal or column it is analyzin
+    # find the length of the row, diagonal or column it is analyzing
 
     return open_seq_count, semi_open_seq_count
 
 
 def search_max(board):
     return move_y, move_x
+    pass
 
 
 def score(board):
@@ -251,6 +263,7 @@ def test_detect_row():
     length = 3
     put_seq_on_board(board, y, x, d_y, d_x, length, "w")
     print_board(board)
+    print(detect_row(board, "w", 0, x, length, d_y, d_x))
     if detect_row(board, "w", 0, x, length, d_y, d_x) == (1, 0):
         print("TEST CASE for detect_row PASSED")
     else:
@@ -435,4 +448,4 @@ def some_tests():
 if __name__ == '__main__':
     board = make_empty_board(8)
     test_is_bounded()
-
+    test_detect_row()
