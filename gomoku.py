@@ -62,9 +62,14 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
 
 
 def detect_row(board, col, y_start, x_start, length, d_y, d_x):
-    open_count = 0
-    semi_count = 0
-    cur_length = 0
+    ''''This function analyses the row (let’s call it R) of squares that starts at the location (y start,x start)
+    and goes in the direction (d y,d x). Note that this use of the word row is different from “a row in
+    a table”. Here the word row means a sequence of squares, which are adjacent either horizontally,
+    or vertically, or diagonally. The function returns a tuple whose first element is the number of open
+    sequences of colour col of length length in the row R, and whose second element is the number of
+    semi-open sequences of colour col of length length in the row R.'''
+
+    open_count, semi_count, current_length = 0, 0, 0
     sequence_status = ""
 
     while True:
@@ -73,9 +78,9 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
 
         elif board[y_start][x_start] == col:
             # need a function to return the length of a sequence.
-            cur_length = get_length(board, col, y_start, x_start, d_y, d_x)
+            current_length = get_length(board, col, y_start, x_start, d_y, d_x)
 
-            if cur_length == length:
+            if current_length == length:
                 sequence_status = is_bounded(board, (y_start + d_y * (length - 1)), (x_start + d_x * (length - 1)),
                                              length, d_y, d_x)
                 y_start += (length - 1) * d_y
@@ -87,14 +92,16 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
                     semi_count = semi_count + 1
 
             else:
-                y_start += (cur_length - 1) * d_y
-                x_start += (cur_length - 1) * d_x
+                y_start += (current_length - 1) * d_y
+                x_start += (current_length - 1) * d_x
 
         y_start += d_y
         x_start += d_x
 
 
 def get_length(board, col, y_start, x_start, d_y, d_x):
+    '''helper function to get the length of a sequence'''
+
     length = 1  # always starts on a block of correct colour therefore starts with a value of 1.
 
     for i in range(len(board) + 1):
@@ -106,12 +113,54 @@ def get_length(board, col, y_start, x_start, d_y, d_x):
         x_start += d_x
         length += 1
 
+
+
 def detect_rows(board, col, length):
-    open_seq_count, semi_open_seq_count = 0, 0
+    """This function analyses the board board. The function returns a tuple, whose first element is the
+    number of open sequences of colour col of length length on the entire board, and whose second
+    element is the number of semi-open sequences of colour col of length length on the entire board.
+    Only complete sequences count. For example, Fig. 1 is considered to contain one open row of length
+    3, and no other rows. Assume length is an integer greater or equal to 2."""
 
-    # find the length of the row, diagonal or column it is analyzing
+    open_count, semi_count = 0, 0
+    # analyze the diagnonals, vertical rows and the horizonatal rows.
 
-    return open_seq_count, semi_open_seq_count
+    # analyzing rows direction (0,1)
+    for columns in range(len(board)):
+        count = detect_row(board, col, columns, 0, length, 0, 1)
+        open_count += count[0]
+        semi_count += count[1]
+
+    # analyzing the columns
+    for rows in range(len(board)):
+        count = detect_row(board, col, 0, rows, length, 1, 0)
+        open_count += count[0]
+        semi_count += count[1]
+
+    # analyzing diagonals from top left to right and right to left - SIDES ONLY
+    for column in range(len(board)):
+        # top left to bottom right
+        count = detect_row(board, col, column, 0, length, 1, 1)
+        open_count += count[0]
+        semi_count += count[1]
+
+        count = detect_row(board, col, column, 7, length, 1, -1)
+        open_count += count[0]
+        semi_count += count[1]
+
+    # same thing but for the TOP diagonals.
+    for column in range(1, len(board)):
+        count = detect_row(board, col, 0, column, length,1, 1)
+        open_count += count[0]
+        semi_count += count[1]
+
+        count = detect_row(board, col, 0, column,length, 1, -1)
+        open_count += count[0]
+        semi_count += count[1]
+
+    return open_count, semi_count
+
+    # This function passes the testing
 
 
 def search_max(board):
@@ -449,3 +498,4 @@ if __name__ == '__main__':
     board = make_empty_board(8)
     test_is_bounded()
     test_detect_row()
+    test_detect_rows()
