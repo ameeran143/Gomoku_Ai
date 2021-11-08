@@ -1,14 +1,4 @@
-"""Gomoku starter code
-You should complete every incomplete function,
-and add more functions and variables as needed.
-
-Note that incomplete functions have 'pass' as the first statement:
-pass is a Python keyword; it is a statement that does nothing.
-This is a placeholder that you should remove once you modify the function.
-
-Author(s): Michael Guerzhoy with tests contributed by Siavash Kazemian.  Last modified: Oct. 30, 2021
-"""
-
+import copy
 
 def is_empty(board):
     for row in range(8):
@@ -33,14 +23,14 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
     # this code is not needed as wwe assume the sequences are valid and complete
 
     # check if the end values are open or closed
-    if (min(y_end + d_y, x_end + d_x) < 0) or (min(y_end + d_y, x_end + d_x) >= len(board)):
+    if (min(y_end + d_y, x_end + d_x) < 0) or (max(y_end + d_y, x_end + d_x) >= len(board)):
         end_status = "Closed"  # checking if the block next to y or x exceeds the boundaries of the box
     elif board[y_end + d_y][x_end + d_x] == " ":
         end_status = "Open"  # checking if the square next to the end is empty
     else:
         end_status = "Closed"
 
-    # checking staart values
+    # checking start values
     if (min(y_end - length * (d_y), x_end - length * d_x) < 0) or (
             max(y_end - length * (d_y), x_end - length * d_x) >= len(board)):
         start_status = "Closed"
@@ -72,7 +62,7 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
     open_count, semi_count, current_length = 0, 0, 0
     sequence_status = ""
 
-    while True:
+    for i in range(len(board) + 1):
         if y_start + d_y > len(board) or x_start + d_x > len(board) or y_start + d_y < 0 or x_start + d_x < 0:
             return open_count, semi_count
 
@@ -164,8 +154,33 @@ def detect_rows(board, col, length):
 
 
 def search_max(board):
-    return move_y, move_x
-    pass
+    """This function uses the function score() (provided) to find the optimal move for black. It finds the
+    location (y,x), such that (y,x) is empty and putting a black stone on (y,x) maximizes the score of
+    the board as calculated by score(). The function returns a tuple (y, x) such that putting a black
+    stone in coordinates (y, x) maximizes the potential score (if there are several such tuples, you can
+    return any one of them). After the function returns, the contents of board must remain the same."""
+
+    # need to create a deep copy of the board so that the original is unaffected by the function
+
+    board_copy = copy.deepcopy(board)
+    current_score = score(board)
+    testing_score = 0
+    x = 0
+    y = 0
+
+    for row in range(len(board)):
+        for column in range(len(board)):
+            if board_copy[row][column] == " ":
+                board_copy[row][column] = "b"
+                testing_score = score(board_copy)
+                board_copy[row][column] = " "
+
+                if testing_score >= current_score:
+                    current_score = testing_score
+                    y = row
+                    x = column
+
+    return y, x
 
 
 def score(board):
@@ -499,3 +514,4 @@ if __name__ == '__main__':
     test_is_bounded()
     test_detect_row()
     test_detect_rows()
+    test_search_max()
