@@ -1,4 +1,5 @@
-import copy
+import copy # used to make deepcopy of the board.
+
 
 def is_empty(board):
     for row in range(8):
@@ -6,7 +7,7 @@ def is_empty(board):
             if board[row][col] != " ":
                 return False
 
-    return False
+    return True
 
 
 def is_bounded(board, y_end, x_end, length, d_y, d_x):
@@ -48,7 +49,7 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
     else:
         return "SEMIOPEN"
 
-    # This function is tested to wo
+    # This function is tested to work
 
 
 def detect_row(board, col, y_start, x_start, length, d_y, d_x):
@@ -81,6 +82,7 @@ def detect_row(board, col, y_start, x_start, length, d_y, d_x):
                 if sequence_status == "SEMIOPEN":
                     semi_count = semi_count + 1
 
+
             else:
                 y_start += (current_length - 1) * d_y
                 x_start += (current_length - 1) * d_x
@@ -102,7 +104,6 @@ def get_length(board, col, y_start, x_start, d_y, d_x):
         y_start += d_y
         x_start += d_x
         length += 1
-
 
 
 def detect_rows(board, col, length):
@@ -140,11 +141,11 @@ def detect_rows(board, col, length):
 
     # same thing but for the TOP diagonals.
     for column in range(1, len(board)):
-        count = detect_row(board, col, 0, column, length,1, 1)
+        count = detect_row(board, col, 0, column, length, 1, 1)
         open_count += count[0]
         semi_count += count[1]
 
-        count = detect_row(board, col, 0, column,length, 1, -1)
+        count = detect_row(board, col, 0, column, length, 1, -1)
         open_count += count[0]
         semi_count += count[1]
 
@@ -182,6 +183,8 @@ def search_max(board):
 
     return y, x
 
+    # tested to work.
+
 
 def score(board):
     MAX_SCORE = 100000
@@ -211,8 +214,86 @@ def score(board):
             open_b[2] + semi_open_b[2] - open_w[2] - semi_open_w[2])
 
 
+def board_full(board):
+    for row in range(len(board)):
+        for column in range(len(board)):
+            if board[row][column] == " ":
+                return False
+
+    return True
+
+
+def detect_winning_row(board, col, y_start, x_start, length, d_y, d_x):
+    """This is an adaption of the previous detect row function"""
+    current_length = 0, 0
+
+    status = False
+
+    for i in range(len(board) + 1):
+        if y_start + d_y > len(board) or x_start + d_x > len(board) or y_start + d_y < 0 or x_start + d_x < 0:
+            return status
+
+        elif board[y_start][x_start] == col:
+            # need a function to return the length of a sequence.
+            current_length = get_length(board, col, y_start, x_start, d_y, d_x)
+
+            if current_length == length:
+                status = True
+            else:
+                y_start += (current_length - 1) * d_y
+                x_start += (current_length - 1) * d_x
+
+        y_start += d_y
+        x_start += d_x
+
+
+def detect_winning_rows(board, col, length):
+    # adaptation of the detect winning rows function but calls the detect winning row function to locate any winning
+    # sequences in the board.
+
+    # analyzing rows direction (0,1)
+    for columns in range(len(board)):
+        if detect_winning_row(board, col, columns, 0, length, 0, 1):
+            return True
+
+    # analyzing the columns
+    for rows in range(len(board)):
+        if detect_winning_row(board, col, 0, rows, length, 1, 0):
+            return True
+
+    # analyzing diagonals from top left to right and right to left - SIDES ONLY
+    for column in range(len(board)):
+        # top left to bottom right
+        if detect_winning_row(board, col, column, 0, length, 1, 1):
+            return True
+
+        if detect_winning_row(board, col, column, 7, length, 1, -1):
+            return True
+
+    # same thing but for the TOP diagonals.
+    for column in range(1, len(board)):
+        if detect_winning_row(board, col, 0, column, length, 1, 1):
+            return True
+
+        if detect_winning_row(board, col, 0, column, length, 1, -1):
+            return True
+
+    return False
+
+
 def is_win(board):
-    pass
+
+    black_count = detect_winning_rows(board, "b", 5)
+    white_count = detect_winning_rows(board, "w", 5)
+
+    if black_count > 0:
+        return "Black won"
+    elif white_count > 0:
+        return "White won"
+    elif board_full(board):
+        return "Draw"
+    else:
+        return "Continue Playing"
 
 
 def print_board(board):
@@ -268,19 +349,29 @@ def play_gomoku(board_size):
         print_board(board)
         analysis(board)
 
+        print(is_win(board))
+
         game_res = is_win(board)
         if game_res in ["White won", "Black won", "Draw"]:
             return game_res
 
-        print("Your move:")
-        move_y = int(input("y coord: "))
-        move_x = int(input("x coord: "))
+        while True:
+            print("Your move:")
+            move_y = int(input("y coord: "))
+            move_x = int(input("x coord: "))
+
+            if  board[move_y][move_x] == " ":
+                break
+            else:
+                print("Try again, that square is full!")
+
         board[move_y][move_x] = "w"
         print_board(board)
         analysis(board)
 
         game_res = is_win(board)
         if game_res in ["White won", "Black won", "Draw"]:
+            print(is_win(board))
             return game_res
 
 
@@ -511,7 +602,163 @@ def some_tests():
 
 if __name__ == '__main__':
     board = make_empty_board(8)
-    test_is_bounded()
-    test_detect_row()
-    test_detect_rows()
-    test_search_max()
+    # test_is_bounded()
+    # test_detect_row()
+    # test_detect_rows()
+    # test_search_max()
+    # some_tests()
+    play_gomoku(8)
+
+    # Some testing code that was borrwed from somebody else.
+
+    # # Test 1: easy_testset_for_main_functions()
+    # print("Test 1")
+    # easy_testset_for_main_functions()
+    #
+    # # Test 2: some_test()
+    # print("===============================================", "\nTest 2")
+    # board = make_empty_board(8)
+    # some_tests()
+    #
+    # # Test 3: is_clear() test
+    # # Testing w/ empty board
+    # print("===============================================", "\nTest 3")
+    # board = make_empty_board(8)
+    # if is_empty(board):
+    #     print("a)Test Passed")
+    #
+    #     # Testing w/ non empty board
+    # board[0][0] = 'w'
+    # if not is_empty(board):
+    #     print("b)Test Passed")
+    #
+    # # Test 4: is_bounded()
+    # # Testing semiopen sequence
+    # print("===============================================", "\nTest 4")
+    # put_seq_on_board(board, 0, 0, 1, 0, 3, 'b')
+    # if is_bounded(board, 2, 0, 3, 1, 0) == 'SEMIOPEN':
+    #     print("a)Test Passed")
+    #
+    #     # Testing open sequence
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 1, 1, 1, 0, 3, 'b')
+    # if is_bounded(board, 3, 1, 3, 1, 0) == 'OPEN':
+    #     print("b)Test Passed")
+    #
+    #     # Testing closed sequence
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 5, 0, 1, 1, 3, 'b')
+    # if is_bounded(board, 7, 2, 3, 1, 1) == 'CLOSED':
+    #     print("c)Test Passed")
+    #
+    # # Test 5: detect_row()
+    # # Testing semiopen sequence
+    # print("===============================================", "\nTest 5")
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 0, 0, 1, 0, 3, 'b')
+    # if detect_row(board, 'b', 0, 0, 3, 1, 0) == (0, 1):
+    #     print("a)Test Passed")
+    #
+    #     # Testing open sequence
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 1, 0, 1, 0, 3, 'b')
+    # if detect_row(board, 'b', 0, 0, 3, 1, 0) == (1, 0):
+    #     print("b)Test Passed")
+    #
+    #     # Testing open and semiopen sequence
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 1, 0, 1, 0, 3, 'b')
+    # put_seq_on_board(board, 5, 0, 1, 0, 3, 'b')
+    # if detect_row(board, 'b', 0, 0, 3, 1, 0) == (1, 1):
+    #     print("c)Test Passed")
+    #
+    #     # Testing sequences of varying lengths (4 and 3)
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 0, 0, 1, 0, 4, 'b')
+    # put_seq_on_board(board, 5, 0, 1, 0, 3, 'b')
+    # if detect_row(board, 'b', 0, 0, 3, 1, 0) == (0, 1):
+    #     print("d)Test Passed")
+    #
+    #     # Testing diagonal sequences
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 1, 1, 1, 1, 4, 'b')
+    # if detect_row(board, 'b', 0, 0, 4, 1, 1) == (1, 0):
+    #     print("e)Test Passed")
+    #
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 6, 2, -1, 1, 4, 'b')
+    # if detect_row(board, 'b', 7, 1, 4, -1, 1) == (1, 0):
+    #     print("f)Test Passed")
+    #
+    # # Test 6: detect_rows()
+    # print("===============================================", "\nTest 6")
+    # # Testing one row-open
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 1, 1, 1, 1, 4, 'b')
+    # if detect_rows(board, 'b', 4) == (1, 0):
+    #     print("a)Test Passed")
+    #
+    #     # Testing one row-open, one row-semiopen
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 1, 1, 1, 1, 4, 'b')
+    # put_seq_on_board(board, 0, 6, 1, 0, 4, 'b')
+    # if detect_rows(board, 'b', 4) == (1, 1):
+    #     print("b)Test Passed")
+    #
+    #     # Testing one row-open, one row-semiopen, connected
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 2, 3, 0, 1, 4, 'b')
+    # put_seq_on_board(board, 0, 6, 1, 0, 4, 'b')
+    # if detect_rows(board, 'b', 4) == (1, 1):
+    #     print("c)Test Passed")
+    #
+    #     # Testing one row-open but of wrong length
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 1, 1, 1, 1, 4, 'b')
+    # if detect_rows(board, 'b', 3) == (0, 0):
+    #     print("d)Test Passed")
+    #
+    # # Test 7: is_win()
+    # print("===============================================", "\nTest 7")
+    # # Testing win for black and white
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 0, 6, 1, 0, 5, 'b')
+    # if is_win(board) == "Black won":
+    #     print("a)Test Passed")
+    #
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 0, 6, 1, 0, 5, 'w')
+    # if is_win(board) == "White won":
+    #     print("b)Test Passed")
+    #
+    #     # Testing continue playing for sequence of 4, board 1 square short of full, and sequence of 6
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 0, 6, 1, 0, 4, 'b')
+    # if is_win(board) == "Continue playing":
+    #     print("c)Test Passed")
+    #
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 0, 6, 1, 0, 4, 'w')
+    # if is_win(board) == "Continue playing":
+    #     print("d)Test Passed")
+    #
+    # board = make_empty_board(8)
+    # for i in range(4):
+    #     put_seq_on_board(board, 0, i, 1, 0, 8, 'b')
+    #     put_seq_on_board(board, 0, i + 4, 1, 0, 8, 'w')
+    # board[7][7] = ' '
+    # if is_win(board) == "Continue playing":
+    #     print("e)Test Passed")
+    #
+    # board = make_empty_board(8)
+    # put_seq_on_board(board, 0, 6, 1, 0, 6, 'w')
+    # if is_win(board) == "Continue playing":
+    #     print("f)Test Passed")
+    #
+    #     # Testing draw
+    # board = make_empty_board(8)
+    # for i in range(4):
+    #     put_seq_on_board(board, 0, i, 1, 0, 8, 'b')
+    #     put_seq_on_board(board, 0, i + 4, 1, 0, 8, 'w')
+    # if is_win(board) == "Draw":
+    #     print("g)Test Passed")
