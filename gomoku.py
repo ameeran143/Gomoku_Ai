@@ -114,7 +114,7 @@ def detect_rows(board, col, length):
     3, and no other rows. Assume length is an integer greater or equal to 2."""
 
     open_count, semi_count = 0, 0
-    # analyze the diagnonals, vertical rows and the horizonatal rows.
+    # analyze the diagonals, vertical rows and the horizontal rows.
 
     # analyzing rows direction (0,1)
     for columns in range(len(board)):
