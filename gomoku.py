@@ -41,7 +41,6 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
         start_status = "Closed"
 
     # Now combining the start value and end value: determine if open or closed
-
     if start_status == "Open" and end_status == "Open":
         return "OPEN"
     elif start_status == "Closed" and end_status == "Closed":
@@ -139,8 +138,8 @@ def detect_rows(board, col, length):
         open_count += count[0]
         semi_count += count[1]
 
-    # same thing but for the TOP diagonals.
-    for column in range(1, len(board)):
+    # same thing but for the TOP diagonals. 1, len(board) - 1 to not have any overlap.
+    for column in range(1, len(board)-1):
         count = detect_row(board, col, 0, column, length, 1, 1)
         open_count += count[0]
         semi_count += count[1]
@@ -282,6 +281,7 @@ def detect_winning_rows(board, col, length):
 
 
 def is_win(board):
+    # detects if there are any winning rows of each colour
 
     black_count = detect_winning_rows(board, "b", 5)
     white_count = detect_winning_rows(board, "w", 5)
@@ -293,7 +293,7 @@ def is_win(board):
     elif board_full(board):
         return "Draw"
     else:
-        return "Continue Playing"
+        return "Continue playing"
 
 
 def print_board(board):
@@ -349,7 +349,7 @@ def play_gomoku(board_size):
         print_board(board)
         analysis(board)
 
-        print(is_win(board))
+        # print(is_win(board))
 
         game_res = is_win(board)
         if game_res in ["White won", "Black won", "Draw"]:
@@ -607,7 +607,7 @@ if __name__ == '__main__':
     # test_detect_rows()
     # test_search_max()
     # some_tests()
-    play_gomoku(8)
+    print(play_gomoku(8))
 
     # Some testing code that was borrwed from somebody else.
 
