@@ -16,7 +16,7 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
     sequence is closed. Assume that the sequence is complete (i.e., you are not just given a subsequence)
     and valid, and contains stones of only one colour."""
     start_status = ""
-    end_status = ""
+    end = ""
 
     # going to check if the x_end and y_end are first valid coordinates
     if (max(y_end, x_end) >= len(board)) or (min(y_end, x_end) < 0):
@@ -25,11 +25,11 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
 
     # check if the end values are open or closed
     if (min(y_end + d_y, x_end + d_x) < 0) or (max(y_end + d_y, x_end + d_x) >= len(board)):
-        end_status = "Closed"  # checking if the block next to y or x exceeds the boundaries of the box
+        end = "Closed"  # checking if the block next to y or x exceeds the boundaries of the box
     elif board[y_end + d_y][x_end + d_x] == " ":
-        end_status = "Open"  # checking if the square next to the end is empty
+        end = "Open"  # checking if the square next to the end is empty
     else:
-        end_status = "Closed"
+        end = "Closed"
 
     # checking start values
     if (min(y_end - length * (d_y), x_end - length * d_x) < 0) or (
@@ -41,9 +41,9 @@ def is_bounded(board, y_end, x_end, length, d_y, d_x):
         start_status = "Closed"
 
     # Now combining the start value and end value: determine if open or closed
-    if start_status == "Open" and end_status == "Open":
+    if start_status == "Open" and end == "Open":
         return "OPEN"
-    elif start_status == "Closed" and end_status == "Closed":
+    elif start_status == "Closed" and end == "Closed":
         return "CLOSED"
     else:
         return "SEMIOPEN"
@@ -601,12 +601,6 @@ def some_tests():
 
 
 if __name__ == '__main__':
-    board = make_empty_board(8)
-    # test_is_bounded()
-    # test_detect_row()
-    # test_detect_rows()
-    # test_search_max()
-    # some_tests()
     print(play_gomoku(8))
 
     # Some testing code that was borrwed from somebody else.
