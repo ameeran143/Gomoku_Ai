@@ -1,5 +1,6 @@
 import copy # used to make deepcopy of the board.
 
+# GOMOKU AI program.
 
 def is_empty(board):
     for row in range(8):
